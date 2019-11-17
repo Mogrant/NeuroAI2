@@ -6,36 +6,11 @@ using System.Threading.Tasks;
 
 namespace SA3
 {
-    /// <summary>
-    /// Объект входного нейрона
-    /// </summary>
-    class InputNeuron
-    {
-        double value;
 
-        public InputNeuron()
-        {
-
-        }
-
-        public double Value //Получение значнения x
-        {
-            get
-            {
-                return this.value;
-            }
-            set
-            {
-                this.value = value;
-            }
-        }
-        //temp
-    }
-
-    //new changes
     class Axon
     {
-        double omega;
+        double omega = 1;
+        Neuron connectedNeuron;
 
         public double Omega
         {
@@ -47,15 +22,112 @@ namespace SA3
             {
                 this.omega = value;
             }
+        } //Возврат или присвоение omega
+
+        /// <summary>
+        /// Конструктор объекта аксона
+        /// </summary>
+        /// <param name="hn">ссылка соединяемого нейрона</param>
+        public Axon(Neuron hn)
+        {
+            this.connectedNeuron = hn;
         }
+
+        /// <summary>
+        /// Результат аксона
+        /// </summary>
+        public double Result
+        {
+            get
+            {
+                return (double)(connectedNeuron.Result * omega);
+            }
+        }
+
+        public Neuron ConnectedNeuron
+        {
+            get
+            {
+                return connectedNeuron;
+            }
+        }
+
     }
 
-    class HideNeuron
+    class Neuron
     {
+        int index;
 
-        public HideNeuron()
+        List<Axon> axons = new List<Axon>();
+
+        double resultFunc = 0;
+
+        public Neuron(int index)
         {
+            this.index = index;
+        }
 
+        public void AddAxon( Neuron connectionNeuron )
+        {
+            axons.Add(new Axon(connectionNeuron));
+        }
+
+        public void AddAxon(Neuron connectionNeuron, double omega)
+        {
+            axons.Add(new Axon(connectionNeuron));
+            axons[axons.Count - 1].Omega = omega;
+        }
+
+        private double SumOfAllAxons
+        {
+            get
+            {
+                double summ = 0;
+                for (int i = 0; i < axons.Count; i++)
+                {
+                    summ += axons[i].Result;
+                }
+                return summ;
+            }
+        }
+
+        public double ActivationFunc()
+        {
+            resultFunc = Math.Tanh(SumOfAllAxons);
+            return resultFunc;
+        }
+
+        public double Result
+        {
+            get
+            {
+                return this.resultFunc;
+            }
+            set
+            {
+                if (axons.Count == 0)
+                {
+                    this.resultFunc = value;
+                }
+
+                //Добавить вывод ошибки
+            }
+        }
+
+        public int Index
+        {
+            get
+            {
+                return this.index;
+            }
+        }
+
+        public List<Axon> Axons
+        {
+            get
+            {
+                return axons;
+            }
         }
     }
 
