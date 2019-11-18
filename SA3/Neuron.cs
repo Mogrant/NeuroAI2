@@ -60,7 +60,9 @@ namespace SA3
 
         List<Axon> axons = new List<Axon>();
 
-        double resultFunc = 0;
+        double resultActivationFunc = 0;
+        double correctlyResult = 0;
+        double errorValue = 0;
 
         public Neuron(int index)
         {
@@ -91,24 +93,36 @@ namespace SA3
             }
         }
 
-        public double ActivationFunc()
+        public double CalcActicationFunc()
         {
-            resultFunc = Math.Tanh(SumOfAllAxons);
+            resultActivationFunc = Math.Tanh(SumOfAllAxons);
             //resultFunc = SumOfAllAxons;
-            return resultFunc;
+            return resultActivationFunc;
+        }
+
+        public double CalcErrorValue()
+        {
+            Func<double, double> f = SumOfAllAxons => Math.Tanh(SumOfAllAxons);
+            this.errorValue = correctlyResult - resultActivationFunc * derivative(f, SumOfAllAxons, 0.01);
+            return this.errorValue;
+        }
+
+        private double derivative(Func<double, double> f, double x, double dx)
+        {
+            return (f(x + dx) - f(x)) / dx;
         }
 
         public double Result
         {
             get
             {
-                return this.resultFunc;
+                return this.resultActivationFunc;
             }
             set
             {
                 if (axons.Count == 0)
                 {
-                    this.resultFunc = value;
+                    this.resultActivationFunc = value;
                 }
 
                 //Добавить вывод ошибки
@@ -120,6 +134,18 @@ namespace SA3
             get
             {
                 return this.index;
+            }
+        }
+
+        public double ResultCorrectly
+        {
+            get
+            {
+                return this.correctlyResult;
+            }
+            set
+            {
+                this.correctlyResult = value;
             }
         }
 

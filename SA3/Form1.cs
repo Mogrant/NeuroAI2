@@ -17,6 +17,8 @@ namespace SA3
 
         bool debug = false;
 
+        bool enableRenderXLayer = false;
+
         struct TrainingSample
         {
             List<double> Arr;
@@ -64,8 +66,8 @@ namespace SA3
 
         int XmapScale = 4;
 
-        int Xcount = 10;
-        int Zcount = 8;
+        int Xcount = 600;
+        int Zcount = 5;
         int Ycount = 2;
         List<Neuron> Xneurons = new List<Neuron>();
         List<Neuron> Zneurons = new List<Neuron>(); //добавить возможность изменения количества внутренних слоев
@@ -146,30 +148,40 @@ namespace SA3
             g.Clear(Color.White);
             float yXDivide = (float)(pictureBox1.Height / Xneurons.Count);
             float xDivide = (float)(pictureBox1.Width / 3);
-            for (int i = 0; i < Xneurons.Count; i++)
+
+            if (enableRenderXLayer)
             {
-                if (Xneurons[i].Result > 0)
+                for (int i = 0; i < Xneurons.Count; i++)
                 {
-                    drawCircle(Color.Red, xDivide - xDivide / 2, yXDivide * i + yXDivide / 2, 20);
-                }
-                else
-                {
-                    drawCircle(Color.LightBlue, xDivide - xDivide / 2, yXDivide * i + yXDivide / 2, 20);
-                }
+                    if (Xneurons[i].Result > 0)
+                    {
+                        drawCircle(Color.Red, xDivide - xDivide / 2, yXDivide * i + yXDivide / 2, 20);
+                    }
+                    else
+                    {
+                        drawCircle(Color.LightBlue, xDivide - xDivide / 2, yXDivide * i + yXDivide / 2, 20);
+                    }
                 
-                //g.DrawString(Convert.ToString(Xneurons[i].Result), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), xDivide - xDivide / 2, yXDivide * i + yXDivide / 2);
+                    //g.DrawString(Convert.ToString(Xneurons[i].Result), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), xDivide - xDivide / 2, yXDivide * i + yXDivide / 2);
+
+                }
 
             }
+
 
             float yZDivide = (float)(pictureBox1.Height / Zneurons.Count);
             for (int i = 0; i < Zneurons.Count; i++)
             {
-                for (int j = 0; j < Xneurons.Count; j++)
+                if (enableRenderXLayer)
                 {
-                    if (Zneurons[i].Axons[j].ConnectedNeuron.Index == j)
+                    for (int j = 0; j < Xneurons.Count; j++)
                     {
-                        g.DrawLine(new Pen(Color.Black,  (float)Zneurons[i].Axons[j].Omega*5), xDivide- xDivide/2, yXDivide * j + yXDivide/2, xDivide * 2 - xDivide/2, yZDivide * i + yZDivide/2);
+                        if (Zneurons[i].Axons[j].ConnectedNeuron.Index == j)
+                        {
+                            g.DrawLine(new Pen(Color.Black,  (float)Zneurons[i].Axons[j].Omega*5), xDivide- xDivide/2, yXDivide * j + yXDivide/2, xDivide * 2 - xDivide/2, yZDivide * i + yZDivide/2);
+                        }
                     }
+
                 }
                 drawCircle(Color.Beige, xDivide * 2 - xDivide / 2, yZDivide * i + yZDivide / 2, 20);
 
@@ -247,9 +259,12 @@ namespace SA3
 
         private void AddLearnSamples()
         {
-            AddLearnSampleToList("l1.png", new int[1] { 0 });
-            AddLearnSampleToList("l2.png", new int[1] { 0 });
-            AddLearnSampleToList("l3.png", new int[1] { 0 });
+            AddLearnSampleToList("l1.png", new int[2] { 0, 1 });
+            AddLearnSampleToList("l2.png", new int[2] { 0, 1 });
+            AddLearnSampleToList("l3.png", new int[2] { 0, 1 });
+            AddLearnSampleToList("k1.png", new int[2] { 1, 0 });
+            AddLearnSampleToList("k2.png", new int[2] { 1, 0 });
+            AddLearnSampleToList("k3.png", new int[2] { 1, 0 });
         }
 
         private TrainingSample ConvertToTrainingSample(string file, int[] resultY)
@@ -311,16 +326,16 @@ namespace SA3
         {
             for (int i = 0; i < Zneurons.Count; i++)
             {
-                Zneurons[i].ActivationFunc();
+                Zneurons[i].CalcActicationFunc();
             }
 
             for (int i = 0; i < Yneurons.Count; i++)
             {
-                Yneurons[i].ActivationFunc();
+                Yneurons[i].CalcActicationFunc();
             }
         }
 
-        private void SetLearnSampleToX(int index)
+        private void SetLearnSampleToNeuro(int index)
         {
             if (learns[index].LearnArray.Count > Xneurons.Count)
             {
@@ -339,6 +354,8 @@ namespace SA3
             //RenderXmap();
 
         }
+
+        
 
         private void RenderXmap()
         {
@@ -372,12 +389,16 @@ namespace SA3
             AddNeurons();
             AddLearnSamples();
             //Render();
-            SetLearnSampleToX(2);
+            SetLearnSampleToNeuro(2);
 
             CallActivationFuncAllNeurons();
             //Render();
-            
+
             Render();
+            RenderXmap();
+
+            WriteLineConsole("F   = " + Yneurons[0].CalcActicationFunc());
+            WriteLineConsole("Err = " + Yneurons[0].CalcErrorValue());
         }
 
     }
