@@ -11,6 +11,7 @@ namespace SA3
     {
         double omega = 1;
         Neuron connectedNeuron;
+        double deltaOmega;
 
         public double Omega
         {
@@ -52,6 +53,18 @@ namespace SA3
             }
         }
 
+        public double DeltaOmega
+        {
+            get
+            {
+                return this.deltaOmega;
+            }
+        }
+        public void CalcDeltaOmega( double errorValue , double speedLearn )
+        {
+            this.deltaOmega = errorValue * Result;
+        }
+
     }
 
     class Neuron
@@ -61,12 +74,16 @@ namespace SA3
         List<Axon> axons = new List<Axon>();
 
         double resultActivationFunc = 0;
+
         double correctlyResult = 0;
         double errorValue = 0;
+        double speedLearn = 0;
+        double deltaOffset = 0;
 
-        public Neuron(int index)
+        public Neuron(int index, double speedLearn)
         {
             this.index = index;
+            this.speedLearn = speedLearn;
         }
 
         public void AddAxon( Neuron connectionNeuron )
@@ -105,6 +122,19 @@ namespace SA3
             Func<double, double> f = SumOfAllAxons => Math.Tanh(SumOfAllAxons);
             this.errorValue = correctlyResult - resultActivationFunc * derivative(f, SumOfAllAxons, 0.01);
             return this.errorValue;
+        }
+
+        public void CalcDeltaOmega()
+        {
+            for (int i = 0; i < axons.Count; i++)
+            {
+                axons[i].CalcDeltaOmega(this.errorValue, speedLearn);
+            }
+        }
+
+        public void CalcDeltaOffset()
+        {
+            this.deltaOffset = errorValue * speedLearn;
         }
 
         private double derivative(Func<double, double> f, double x, double dx)

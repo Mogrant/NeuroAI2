@@ -65,6 +65,7 @@ namespace SA3
         Pen pn;
 
         int XmapScale = 4;
+        double speedLearn = 0.1;
 
         int Xcount = 600;
         int Zcount = 5;
@@ -213,14 +214,14 @@ namespace SA3
                 addedNeurons = true;
                 for (int i = 0; i < Xcount; i++)
                 {
-                    Xneurons.Add(new Neuron(i));
+                    Xneurons.Add(new Neuron(i, speedLearn));
                     Xneurons[Xneurons.Count - 1].Result = rnd.Next(0, 2);
                     DebugWriteLineConsole(Color.LightBlue, "Added X neuron [" + i + "]");
                 }
 
                 for (int i = 0; i < Zcount; i++)
                 {
-                    Zneurons.Add(new Neuron(i));
+                    Zneurons.Add(new Neuron(i, speedLearn));
                     DebugWriteLineConsole(Color.LightCoral, "Added Z neuron [" + i + "]");
                     for (int j = 0; j < Xneurons.Count; j++)
                     {
@@ -231,7 +232,7 @@ namespace SA3
 
                 for (int i = 0; i < Ycount; i++)
                 {
-                    Yneurons.Add(new Neuron(i));
+                    Yneurons.Add(new Neuron(i, speedLearn));
                     DebugWriteLineConsole(Color.LightSalmon, "Added Y neuron [" + i + "]");
                     for (int j = 0; j < Zneurons.Count; j++)
                     {
