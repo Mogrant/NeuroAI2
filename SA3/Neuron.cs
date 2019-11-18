@@ -94,6 +94,7 @@ namespace SA3
         public double ActivationFunc()
         {
             resultFunc = Math.Tanh(SumOfAllAxons);
+            //resultFunc = SumOfAllAxons;
             return resultFunc;
         }
 

@@ -15,20 +15,20 @@ namespace SA3
     public partial class Form1 : Form
     {
 
-        bool debug = true;
+        bool debug = false;
 
-        struct LearnEx
+        struct TrainingSample
         {
-            ArrayList Arr;
-            ArrayList YCorrect;
+            List<double> Arr;
+            List<double> YCorrect;
 
-            public LearnEx(ArrayList arr, ArrayList ycorrect)
+            public TrainingSample(List<double> arr, List<double> ycorrect)
             {
                 this.Arr = arr;
                 this.YCorrect = ycorrect;
             }
 
-            public ArrayList LearnArray
+            public List<double> LearnArray
             {
                 get
                 {
@@ -40,7 +40,7 @@ namespace SA3
                 }
             }
 
-            public ArrayList LearnYCorrect
+            public List<double> LearnYCorrect
             {
                 get
                 {
@@ -53,7 +53,7 @@ namespace SA3
             }
         }
 
-        List<LearnEx> learns;
+        List<TrainingSample> learns;
 
 
         Color defaultColor = Color.White;
@@ -62,7 +62,7 @@ namespace SA3
         Brush br;
         Pen pn;
 
-
+        int XmapScale = 4;
 
         int Xcount = 10;
         int Zcount = 8;
@@ -81,7 +81,7 @@ namespace SA3
         public void WriteConsole(string str)
         {
             richTextBox1.AppendText(str);
-            richTextBox1.ScrollToCaret();
+            //richTextBox1.ScrollToCaret();
         }
         public void WriteLineConsole(Color clr, string str)
         {
@@ -95,7 +95,7 @@ namespace SA3
             richTextBox1.SelectionColor = clr;
             richTextBox1.AppendText(str);
             richTextBox1.ScrollToCaret();
-            richTextBox1.SelectionColor = defaultColor;
+            //richTextBox1.SelectionColor = defaultColor;
 
         }
         public void DebugWriteLineConsole(string str)
@@ -108,7 +108,7 @@ namespace SA3
         {
             if (!debug) return;
             richTextBox1.AppendText(str);
-            richTextBox1.ScrollToCaret();
+            //richTextBox1.ScrollToCaret();
         }
         public void DebugWriteLineConsole(Color clr, string str)
         {
@@ -123,7 +123,7 @@ namespace SA3
             if (!debug) return;
             richTextBox1.SelectionColor = clr;
             richTextBox1.AppendText(str);
-            richTextBox1.ScrollToCaret();
+            //richTextBox1.ScrollToCaret();
             richTextBox1.SelectionColor = defaultColor;
 
         }
@@ -171,8 +171,10 @@ namespace SA3
                         g.DrawLine(new Pen(Color.Black,  (float)Zneurons[i].Axons[j].Omega*5), xDivide- xDivide/2, yXDivide * j + yXDivide/2, xDivide * 2 - xDivide/2, yZDivide * i + yZDivide/2);
                     }
                 }
-                drawCircle(Color.FromArgb(255, (int)((double)(Zneurons[i].ActivationFunc()*255)),255-(int)((double)(Zneurons[i].ActivationFunc() * 255)), 0), xDivide*2 - xDivide / 2, yZDivide * i + yZDivide/2, 20);
-                g.DrawString(Convert.ToString(Zneurons[i].ActivationFunc()), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), xDivide * 2 - xDivide / 2, yZDivide * i + yZDivide / 2);
+                drawCircle(Color.Beige, xDivide * 2 - xDivide / 2, yZDivide * i + yZDivide / 2, 20);
+
+                //drawCircle(Color.FromArgb(255, (int)((double)(Zneurons[i].Result*255)),255-(int)((double)(Zneurons[i].Result * 255)), 0), xDivide*2 - xDivide / 2, yZDivide * i + yZDivide/2, 20);
+                g.DrawString(Convert.ToString(Zneurons[i].Result), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), xDivide * 2 - xDivide / 2, yZDivide * i + yZDivide / 2);
 
             }
 
@@ -187,7 +189,7 @@ namespace SA3
                     }
                 }
                 drawCircle(Color.LightSalmon, xDivide*3 - xDivide / 2, yYDivide * i + yYDivide / 2, 20);
-                g.DrawString(Convert.ToString(Yneurons[i].ActivationFunc()), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), xDivide * 3 - xDivide / 2, yYDivide * i + yYDivide / 2);
+                g.DrawString(Convert.ToString(Yneurons[i].Result), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), xDivide * 3 - xDivide / 2, yYDivide * i + yYDivide / 2);
             }
 
         }
@@ -225,16 +227,34 @@ namespace SA3
                         DebugWriteLineConsole(Color.LightSalmon, " + Added axon : Y neuron [" + i + "] connected with " + Zneurons[j].Index + " w = " + Yneurons[i].Axons[Yneurons[i].Axons.Count - 1].Omega);
                     }
                 }
-                WriteLineConsole("Created neurons X = " + Xneurons.Count + " Z = " + Zneurons.Count + " Y = " + Yneurons.Count);
+                WriteLineConsole(Color.LightGreen, "Created neurons : X neurons count = " + Xneurons.Count + ", Z neurons count = " + Zneurons.Count + ", Y neurons count = " + Yneurons.Count);
             }
         }
 
-        private LearnEx AddLearnEx(string file, int resultY)
+        private void AddLearnSampleToList(string file, int[] Ycorrect)
         {
             if (!System.IO.File.Exists("./" + file))
             {
                 WriteLineConsole(Color.Red, "File : \"" + file + "\" is not exists!");
             }
+            else
+            {
+                learns.Add(ConvertToTrainingSample(file, Ycorrect));
+                WriteLineConsole(Color.LightGreen, "Learn sample [" + (learns.Count - 1) + "] has been added from file\""+ file  + "\".");
+            }
+
+        }
+
+        private void AddLearnSamples()
+        {
+            AddLearnSampleToList("l1.png", new int[1] { 0 });
+            AddLearnSampleToList("l2.png", new int[1] { 0 });
+            AddLearnSampleToList("l3.png", new int[1] { 0 });
+        }
+
+        private TrainingSample ConvertToTrainingSample(string file, int[] resultY)
+        {
+
             System.Drawing.Image image;
             System.Drawing.Bitmap picture;
             int[,] picMatrix;
@@ -242,7 +262,7 @@ namespace SA3
             {
                 image = Image.FromFile("./" + file);
                 picture = new Bitmap(image);
-                WriteLineConsole("bitmap created");
+                //WriteLineConsole("bitmap created");
                 picMatrix = new int[picture.Width, picture.Height];
                 Color clr;
                 for (int i = 0; i < picture.Width; i++)
@@ -267,20 +287,75 @@ namespace SA3
                 WriteLineConsole("Error load image");
             }
 
-            ArrayList arr = new ArrayList();
+            List<double> arr = new List<double>();
             for (int i = 0; i < picMatrix.GetLength(0); i++)
             {
                 for (int j = 0; j < picMatrix.GetLength(1); j++)
                 {
-                    WriteConsole(" " + picMatrix[i, j]);
+                    DebugWriteConsole(" " + picMatrix[i, j]);
                     arr.Add(picMatrix[i, j]);
 
                 }
-                WriteLineConsole("");
+                DebugWriteLineConsole("");
             }
-            ArrayList Ycorrect = new ArrayList();
-            Ycorrect.Add(resultY);
-            return new LearnEx(arr, Ycorrect);
+            List<double> Ycorrect = new List<double>();
+
+            for (int i = 0; i < resultY.Length; i++)
+            {
+                Ycorrect.Add(resultY[i]);
+            }
+            return new TrainingSample(arr, Ycorrect);
+        }
+
+        private void CallActivationFuncAllNeurons()
+        {
+            for (int i = 0; i < Zneurons.Count; i++)
+            {
+                Zneurons[i].ActivationFunc();
+            }
+
+            for (int i = 0; i < Yneurons.Count; i++)
+            {
+                Yneurons[i].ActivationFunc();
+            }
+        }
+
+        private void SetLearnSampleToX(int index)
+        {
+            if (learns[index].LearnArray.Count > Xneurons.Count)
+            {
+                for (int i = 0; i < Xneurons.Count; i++)
+                {
+                    Xneurons[i].Result = (double)(learns[index].LearnArray[i]);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < learns[index].LearnArray.Count; i++)
+                {
+                    Xneurons[i].Result = (double)learns[index].LearnArray[i];
+                }
+            }
+            //RenderXmap();
+
+        }
+
+        private void RenderXmap()
+        {
+            Bitmap mb = new Bitmap(100, 100);
+            int y = 0;
+            int x = 0;
+            for (int i = 0; i < Xneurons.Count; i++)
+            {
+                y++;
+                if (y > 29)
+                {
+                    y = 0;
+                    x++;
+                }
+                mb.SetPixel(x, y, Color.FromArgb(255, (int)Xneurons[i].Result * 255, (int)Xneurons[i].Result * 255, (int)Xneurons[i].Result * 255));
+            }
+            pictureBox2.Image = mb;
         }
 
         //EVENTS
@@ -289,17 +364,22 @@ namespace SA3
             g = pictureBox1.CreateGraphics();
             pn = new Pen(Color.Black, 1);
             br = new SolidBrush(Color.Beige);
+            learns = new List<TrainingSample>();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             AddNeurons();
+            AddLearnSamples();
+            //Render();
+            SetLearnSampleToX(2);
+
+            CallActivationFuncAllNeurons();
+            //Render();
+            
             Render();
-            learns = new List<LearnEx>();
-            learns.Add(AddLearnEx("l1.png", 0));
-            learns.Add(AddLearnEx("l2.png", 0));
-            learns.Add(AddLearnEx("l3.png", 0));
         }
+
     }
 
 
